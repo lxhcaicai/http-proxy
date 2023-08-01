@@ -1,7 +1,12 @@
 package com.github.httpproxy.proxy;
 
 
+import org.apache.http.HttpHost;
+import org.apache.http.client.HttpClient;
+
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import java.net.URI;
 
 /**
  * HTTP反向代理/网关servlet。可扩展以进行定制
@@ -73,5 +78,48 @@ public class ProxyServlet extends HttpServlet {
 
     protected static final String ATTR_TARGET_HOST =
             ProxyServlet.class.getSimpleName() + ".targetHost";
+
+
+    protected boolean doLog = false;
+    protected boolean doForwardIP = true;
+
+    protected boolean doSendUrlFragment = true;
+    protected boolean doPreserveHost = false;
+    protected boolean doPreserveCookies = false;
+    protected boolean doPreserveCookiePath = false;
+    protected boolean doHandleRedirects = false;
+    protected boolean doSystemProperties = true;
+    protected boolean doHandleCompression = false;
+    protected int connectTimeout = -1;
+
+    /**
+     * 接下来的3个缓存在这里，应该只在初始化逻辑中引用
+     */
+    protected String targetUri;
+    protected URI targetUriObj; //new URI(targetUri)
+    protected HttpHost targetHost; // URIUtils.extractHost(targetUriObj);
+
+    private HttpClient proxyClient;
+
+    @Override
+    public String getServletInfo() {
+        return "A proxy servlet by lxhcaicai";
+    }
+
+    protected String getTargetUri(HttpServletRequest servletRequest) {
+        return (String) servletRequest.getAttribute(ATTR_TARGET_URI);
+    }
+
+    protected HttpHost getTargetHost(HttpServletRequest servletRequest) {
+        return (HttpHost) servletRequest.getAttribute(ATTR_TARGET_HOST);
+    }
+
+    /**
+     * 需要一个配置参数。默认情况下，它读取servlet初始化参数,但是它能够被覆盖
+     */
+    protected String getConfigParam(String key) {
+        return getServletConfig().getInitParameter(key);
+    }
+
 
 }
